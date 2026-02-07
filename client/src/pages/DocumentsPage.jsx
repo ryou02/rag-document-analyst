@@ -1,4 +1,4 @@
-import ChatNavbar from '../components/ChatNavbar.jsx'
+import Navbar from '../components/Navbar.jsx'
 
 const notebooks = [
   {
@@ -27,7 +27,7 @@ const notebooks = [
 export default function DocumentsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-white to-blue-100 text-slate-900">
-      <ChatNavbar />
+      <Navbar />
       <main className="mx-auto w-full max-w-6xl px-6 pb-16 pt-8">
         <h1 className="text-3xl font-semibold text-slate-900">Recent notebooks</h1>
         <p className="mt-2 text-sm text-slate-500">Pick up where you left off or start a new workspace.</p>

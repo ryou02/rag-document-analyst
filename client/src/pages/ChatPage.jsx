@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import ChatNavbar from '../components/ChatNavbar.jsx'
+import Navbar from '../components/Navbar.jsx'
 
 export default function ChatPage() {
   const [selectedSources, setSelectedSources] = useState([0, 1, 2, 3])
@@ -19,7 +19,7 @@ export default function ChatPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-white to-blue-100 text-slate-900">
-      <ChatNavbar />
+      <Navbar />
       <main className="mx-auto w-full max-w-7xl px-6 pb-10 pt-6">
         <div className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
           <section className="min-h-[620px] rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm backdrop-blur">
