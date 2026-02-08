@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import Navbar from '../components/Navbar.jsx'
+import FileUpload from '../components/FileUpload.jsx'
 
 export default function ChatPage() {
   const [selectedSources, setSelectedSources] = useState([0, 1, 2, 3])
+  const [showUploader, setShowUploader] = useState(false)
   const sources = [
     'Week 1 Intro to Soc100.pdf',
     'Week 2 Developing a Sociological...',
@@ -20,6 +22,13 @@ export default function ChatPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-white to-blue-100 text-slate-900">
       <Navbar />
+      {showUploader ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-6 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white shadow-2xl">
+            <FileUpload onClose={() => setShowUploader(false)} />
+          </div>
+        </div>
+      ) : null}
       <main className="mx-auto w-full max-w-7xl px-6 pb-10 pt-6">
         <div className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
           <section className="min-h-[620px] rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm backdrop-blur">
@@ -27,7 +36,11 @@ export default function ChatPage() {
               <h2 className="text-sm font-semibold text-slate-700">Sources</h2>
               <button className="text-xs font-medium text-slate-400">II</button>
             </div>
-            <button className="mt-4 w-full rounded-2xl border border-slate-200 bg-blue-50 px-4 py-3 text-sm font-medium text-slate-700">
+            <button
+              type="button"
+              onClick={() => setShowUploader((prev) => !prev)}
+              className="mt-4 w-full rounded-2xl border border-slate-200 bg-blue-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-blue-200 hover:bg-blue-100"
+            >
               + Add sources
             </button>
             <div className="mt-4 space-y-3 text-sm">
