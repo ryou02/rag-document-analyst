@@ -96,26 +96,22 @@ export default function ChatPage() {
                 </div>
               ) : null}
               {sources.map((item, index) => (
-                <button
+                <div
                   key={item}
-                  type="button"
-                  onClick={() => toggleSource(index)}
                   className="flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-left transition hover:border-blue-200 hover:bg-blue-50"
                 >
                   <div className="flex h-6 w-6 items-center justify-center rounded-md bg-red-50 text-[10px] font-semibold text-red-500">
                     PDF
                   </div>
                   <div className="truncate text-slate-700">{item}</div>
-                  <div
-                    className={`ml-auto flex h-5 w-5 items-center justify-center rounded-md text-[10px] font-bold leading-none ${
-                      selectedSources.includes(index)
-                        ? 'bg-slate-300 text-slate-800'
-                        : 'bg-slate-200 text-transparent'
-                    }`}
-                  >
-                    ✓
-                  </div>
-                </button>
+                  <input
+                    type="checkbox"
+                    checked={selectedSources.includes(index)}
+                    onChange={() => toggleSource(index)}
+                    className="ml-auto h-4 w-4 accent-blue-600"
+                    aria-label="Toggle source"
+                  />
+                </div>
               ))}
             </div>
           </section>
