@@ -18,7 +18,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route
-            path="/chat/:id"
+            path="/projects/:id"
             element={
               <ProtectedRoute>
                 <ChatPage />
@@ -26,7 +26,7 @@ createRoot(document.getElementById('root')).render(
             }
           />
           <Route
-            path="/documents"
+            path="/projects"
             element={
               <ProtectedRoute>
                 <DocumentsPage />

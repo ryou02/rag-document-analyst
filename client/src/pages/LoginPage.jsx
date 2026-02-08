@@ -15,7 +15,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user && !authLoading) {
-      navigate('/documents')
+      navigate('/projects')
     }
   }, [user, authLoading, navigate])
 
@@ -33,7 +33,7 @@ export default function LoginPage() {
     const { error: authError } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/documents`,
+        emailRedirectTo: `${window.location.origin}/projects`,
       },
     })
     setLoading(false)
@@ -53,7 +53,7 @@ export default function LoginPage() {
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/documents`,
+        redirectTo: `${window.location.origin}/projects`,
       },
     })
     if (oauthError) {
