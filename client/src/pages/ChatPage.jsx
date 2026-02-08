@@ -13,11 +13,25 @@ export default function ChatPage() {
   const [loadingSources, setLoadingSources] = useState(false)
   const [sourcesError, setSourcesError] = useState('')
   const [showUploader, setShowUploader] = useState(false)
+  const [openMenuFor, setOpenMenuFor] = useState(null)
 
   const toggleSource = (index) => {
     setSelectedSources((prev) =>
       prev.includes(index) ? prev.filter((item) => item !== index) : [...prev, index],
     )
+  }
+
+  const handleDeleteSource = async (name) => {
+    if (!user) return
+    const ok = window.confirm(`Delete ${name}?`)
+    if (!ok) return
+    const { error } = await supabase.storage.from(STORAGE_BUCKET).remove([`${user.id}/${name}`])
+    if (error) {
+      setSourcesError(error.message)
+      return
+    }
+    setOpenMenuFor(null)
+    loadSources()
   }
 
   const loadSources = async () => {
@@ -98,11 +112,20 @@ export default function ChatPage() {
               {sources.map((item, index) => (
                 <div
                   key={item}
-                  className="flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-left transition hover:border-blue-200 hover:bg-blue-50"
+                  className="group relative flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-left transition hover:border-blue-200 hover:bg-blue-50"
                 >
-                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-red-50 text-[10px] font-semibold text-red-500">
-                    PDF
-                  </div>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      setOpenMenuFor((prev) => (prev === item ? null : item))
+                    }}
+                    className="flex h-6 w-6 items-center justify-center rounded-md bg-red-50 text-[10px] font-semibold text-red-500 transition group-hover:bg-slate-200 group-hover:text-slate-600"
+                    aria-label="More options"
+                  >
+                    <span className="group-hover:hidden">PDF</span>
+                    <span className="hidden group-hover:block">⋮</span>
+                  </button>
                   <div className="truncate text-slate-700">{item}</div>
                   <input
                     type="checkbox"
@@ -111,6 +134,20 @@ export default function ChatPage() {
                     className="ml-auto h-4 w-4 accent-blue-600"
                     aria-label="Toggle source"
                   />
+                  {openMenuFor === item ? (
+                    <div className="absolute left-10 top-8 z-10 w-36 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          handleDeleteSource(item)
+                        }}
+                        className="w-full rounded-lg px-3 py-2 text-left text-xs text-red-500 hover:bg-red-50"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -120,8 +157,6 @@ export default function ChatPage() {
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-700">Chat</h2>
               <div className="flex items-center gap-2 text-xs text-slate-400">
-                <span>+</span>
-                <span>⋮</span>
               </div>
             </div>
 
