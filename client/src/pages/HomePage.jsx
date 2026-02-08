@@ -5,7 +5,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-b from-white via-white to-blue-100 text-slate-900">
       <HomeNavbar />
       <main className="mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-4xl flex-col items-center justify-center px-6 text-center">
-        <h1 className="rise-in mt-6 text-4xl font-semibold">RAG Document Assistant</h1>
+        <h1 className="rise-in mt-6 text-4xl font-semibold">RAG Document Analyst</h1>
         <p className=" rise-in-delay fade-in mt-3 max-w-2xl text-sm text-slate-500">
           Upload documents, search with citations, and chat with your knowledge base in one place.
         </p>

@@ -5,7 +5,7 @@ export default function HomeNavbar() {
     <div className="bg-white/90 shadow-md shadow-slate-200/70 backdrop-blur">
       <header className="mx-auto flex w-full max-w-7xl items-center justify-between border-b border-slate-200/70 bg-white/80 px-6 py-4">
         <Link to="/" className="flex items-center gap-3">
-          <div className="text-lg font-semibold text-slate-900">RAG Document Assistant</div>
+          <div className="text-lg font-semibold text-slate-900">RAG Document Analyst</div>
         </Link>
         <nav className="flex items-center gap-3 text-sm font-semibold text-slate-600">
           <NavLink

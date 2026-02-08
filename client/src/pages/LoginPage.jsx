@@ -83,7 +83,7 @@ export default function LoginPage() {
       <HomeNavbar />
       <main className="mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-3xl items-center justify-center px-6">
         <div className="rise-in w-full rounded-3xl border border-slate-200 bg-white/90 p-10 text-center shadow-sm backdrop-blur">
-          <h1 className="mt-6 text-2xl font-semibold">RAG Document Assistant</h1>
+          <h1 className="mt-6 text-2xl font-semibold">RAG Document Analyst</h1>
           <p className="mt-2 text-sm text-slate-500">Sign in to continue to your workspace.</p>
 
           <div className="mt-6 space-y-4">
