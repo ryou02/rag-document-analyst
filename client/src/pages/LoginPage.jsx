@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
 import HomeNavbar from '../components/HomeNavbar.jsx'
+import useAuth from '../hooks/useAuth.js'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const { user, loading: authLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -12,28 +14,10 @@ export default function LoginPage() {
   const [oauthLoading, setOauthLoading] = useState(false)
 
   useEffect(() => {
-    let isMounted = true
-
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession()
-      if (data.session && isMounted) {
-        navigate('/documents')
-      }
+    if (user && !authLoading) {
+      navigate('/documents')
     }
-
-    checkSession()
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        navigate('/documents')
-      }
-    })
-
-    return () => {
-      isMounted = false
-      subscription?.subscription?.unsubscribe()
-    }
-  }, [navigate])
+  }, [user, authLoading, navigate])
 
   const handleLogin = async (event) => {
     event.preventDefault()
