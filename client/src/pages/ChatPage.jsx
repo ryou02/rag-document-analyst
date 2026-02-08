@@ -1,17 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar.jsx'
 import FileUpload from '../components/FileUpload.jsx'
+import { supabase } from '../lib/supabaseClient.js'
+import useAuth from '../hooks/useAuth.js'
+
+const STORAGE_BUCKET = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'documents'
 
 export default function ChatPage() {
-  const [selectedSources, setSelectedSources] = useState([0, 1, 2, 3])
+  const { user } = useAuth()
+  const [selectedSources, setSelectedSources] = useState([])
+  const [sources, setSources] = useState([])
+  const [loadingSources, setLoadingSources] = useState(false)
+  const [sourcesError, setSourcesError] = useState('')
   const [showUploader, setShowUploader] = useState(false)
-  const sources = [
-    'Week 1 Intro to Soc100.pdf',
-    'Week 2 Developing a Sociological...',
-    'Week 3 Culture W26.pdf',
-    'Week 4 Socialization W26.pdf',
-    'Week 5 Class Inequality W26.pdf',
-  ]
 
   const toggleSource = (index) => {
     setSelectedSources((prev) =>
@@ -19,13 +20,48 @@ export default function ChatPage() {
     )
   }
 
+  const loadSources = async () => {
+    if (!user) return
+    setLoadingSources(true)
+    setSourcesError('')
+
+    const { data, error } = await supabase.storage.from(STORAGE_BUCKET).list(user.id, {
+      limit: 100,
+      offset: 0,
+      sortBy: { column: 'name', order: 'desc' },
+    })
+
+    setLoadingSources(false)
+
+    if (error) {
+      setSourcesError(error.message)
+      return
+    }
+
+    const files = (data || [])
+      .filter((item) => item.name && !item.name.endsWith('/'))
+      .map((item) => item.name)
+
+    setSources(files)
+    setSelectedSources(files.map((_, index) => index))
+  }
+
+  useEffect(() => {
+    loadSources()
+  }, [user])
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-white to-blue-100 text-slate-900">
       <Navbar />
       {showUploader ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-6 backdrop-blur-sm">
           <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white shadow-2xl">
-            <FileUpload onClose={() => setShowUploader(false)} />
+            <FileUpload
+              onClose={() => setShowUploader(false)}
+              onUploaded={() => {
+                loadSources()
+              }}
+            />
           </div>
         </div>
       ) : null}
@@ -44,6 +80,21 @@ export default function ChatPage() {
               + Add sources
             </button>
             <div className="mt-4 space-y-3 text-sm">
+              {loadingSources ? (
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-4 text-xs text-slate-500">
+                  Loading sources...
+                </div>
+              ) : null}
+              {sourcesError ? (
+                <div className="rounded-2xl border border-red-100 bg-red-50 px-3 py-4 text-xs text-red-500">
+                  {sourcesError}
+                </div>
+              ) : null}
+              {!loadingSources && !sourcesError && sources.length === 0 ? (
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-4 text-xs text-slate-500">
+                  No sources yet. Add a PDF to get started.
+                </div>
+              ) : null}
               {sources.map((item, index) => (
                 <button
                   key={item}

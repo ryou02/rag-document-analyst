@@ -5,7 +5,7 @@ import fileUploadImg from '../assets/fileupload.png'
 
 const DEFAULT_BUCKET = 'documents'
 
-export default function FileUpload({ onClose }) {
+export default function FileUpload({ onClose, onUploaded }) {
   const { user } = useAuth()  
   const [file, setFile] = useState(null)
   const [uploading, setUploading] = useState(false)
@@ -45,6 +45,7 @@ export default function FileUpload({ onClose }) {
 
     setSuccess('Upload complete.')
     setFile(null)
+    onUploaded?.(filePath)
     onClose?.()
   }
 
