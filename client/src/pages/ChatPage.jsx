@@ -25,13 +25,27 @@ export default function ChatPage() {
     )
   }
 
-  const handleDeleteSource = async (name) => {
+  const handleDeleteSource = async (doc) => {
     if (!user) return
-    const ok = window.confirm(`Delete ${name}?`)
+    const ok = window.confirm(`Delete ${doc.title}?`)
     if (!ok) return
-    const { error } = await supabase.storage.from(STORAGE_BUCKET).remove([`${user.id}/${name}`])
-    if (error) {
-      setSourcesError(error.message)
+
+    const { error: storageError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .remove([doc.storage_path])
+    if (storageError) {
+      setSourcesError(storageError.message)
+      return
+    }
+
+    const { error: deleteError } = await supabase
+      .from('documents')
+      .delete()
+      .eq('id', doc.id)
+      .eq('user_id', user.id)
+      .eq('project_id', projectId)
+    if (deleteError) {
+      setSourcesError(deleteError.message)
       return
     }
     setOpenMenuFor(null)
@@ -39,15 +53,16 @@ export default function ChatPage() {
   }
 
   const loadSources = async () => {
-    if (!user) return
+    if (!user || !projectId) return
     setLoadingSources(true)
     setSourcesError('')
 
-    const { data, error } = await supabase.storage.from(STORAGE_BUCKET).list(user.id, {
-      limit: 100,
-      offset: 0,
-      sortBy: { column: 'name', order: 'desc' },
-    })
+    const { data, error } = await supabase
+      .from('documents')
+      .select('id, title, storage_path, created_at')
+      .eq('user_id', user.id)
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false })
 
     setLoadingSources(false)
 
@@ -56,17 +71,13 @@ export default function ChatPage() {
       return
     }
 
-    const files = (data || [])
-      .filter((item) => item.name && !item.name.endsWith('/'))
-      .map((item) => item.name)
-
-    setSources(files)
-    setSelectedSources(files.map((_, index) => index))
+    setSources(data || [])
+    setSelectedSources((data || []).map((_, index) => index))
   }
 
   useEffect(() => {
     loadSources()
-  }, [user])
+  }, [user, projectId])
 
   useEffect(() => {
     const loadProject = async () => {
@@ -121,6 +132,7 @@ export default function ChatPage() {
               onUploaded={() => {
                 loadSources()
               }}
+              projectId={projectId}
             />
           </div>
         </div>
@@ -155,16 +167,16 @@ export default function ChatPage() {
                   No sources yet. Add a PDF to get started.
                 </div>
               ) : null}
-              {sources.map((item, index) => (
+              {sources.map((doc, index) => (
                 <div
-                  key={item}
+                  key={doc.id}
                   className="group relative flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-left transition hover:border-blue-200 hover:bg-blue-50"
                 >
                   <button
                     type="button"
                     onClick={(event) => {
                       event.stopPropagation()
-                      setOpenMenuFor((prev) => (prev === item ? null : item))
+                      setOpenMenuFor((prev) => (prev === doc.id ? null : doc.id))
                     }}
                     className="flex h-6 w-6 items-center justify-center rounded-md bg-red-50 text-[10px] font-semibold text-red-500 transition group-hover:bg-slate-200 group-hover:text-slate-600"
                     aria-label="More options"
@@ -172,7 +184,7 @@ export default function ChatPage() {
                     <span className="group-hover:hidden">PDF</span>
                     <span className="hidden group-hover:block">⋮</span>
                   </button>
-                  <div className="truncate text-slate-700">{item}</div>
+                  <div className="truncate text-slate-700">{doc.title}</div>
                   <input
                     type="checkbox"
                     checked={selectedSources.includes(index)}
@@ -180,13 +192,13 @@ export default function ChatPage() {
                     className="ml-auto h-4 w-4 accent-blue-600"
                     aria-label="Toggle source"
                   />
-                  {openMenuFor === item ? (
+                  {openMenuFor === doc.id ? (
                     <div className="absolute left-10 top-8 z-10 w-36 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
                       <button
                         type="button"
                         onClick={(event) => {
                           event.stopPropagation()
-                          handleDeleteSource(item)
+                          handleDeleteSource(doc)
                         }}
                         className="w-full rounded-lg px-3 py-2 text-left text-xs text-red-500 hover:bg-red-50"
                       >

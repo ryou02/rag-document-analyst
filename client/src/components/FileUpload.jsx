@@ -5,7 +5,7 @@ import fileUploadImg from '../assets/fileupload.png'
 
 const DEFAULT_BUCKET = 'documents'
 
-export default function FileUpload({ onClose, onUploaded }) {
+export default function FileUpload({ onClose, onUploaded, projectId }) {
   const { user } = useAuth()  
   const [file, setFile] = useState(null)
   const [uploading, setUploading] = useState(false)
@@ -21,7 +21,7 @@ export default function FileUpload({ onClose, onUploaded }) {
       return
     }
 
-    if (!user) {
+    if (!user || !projectId) {
       setError('You must be signed in to upload.')
       return
     }
@@ -43,9 +43,21 @@ export default function FileUpload({ onClose, onUploaded }) {
       return
     }
 
+    const { error: insertError } = await supabase.from('documents').insert({
+      user_id: user.id,
+      title: selectedFile.name,
+      storage_path: filePath,
+      project_id: projectId,
+    })
+
+    if (insertError) {
+      setError(insertError.message)
+      return
+    }
+
     setSuccess('Upload complete.')
     setFile(null)
-    onUploaded?.(filePath)
+    onUploaded?.()
     onClose?.()
   }
 
