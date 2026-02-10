@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
 
-export default function Navbar() {
+export default function Navbar({ title = 'Project', emoji = '📁' }) {
   const navigate = useNavigate()
 
   const handleLogout = async () => {
@@ -12,7 +12,11 @@ export default function Navbar() {
   return (
     <div className="bg-white/90 shadow-md shadow-slate-200/70 backdrop-blur">
       <header className="mx-auto flex w-full items-center justify-between border-b border-slate-200/70 bg-white/80 px-6 py-4">
-        <div className="flex items-center gap-3"> 
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-lg shadow-sm">
+            {emoji}
+          </div>
+          <div className="text-lg font-semibold text-slate-900">{title}</div>
         </div>
         <div className="flex items-center gap-3">
           <button

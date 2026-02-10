@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 import FileUpload from '../components/FileUpload.jsx'
 import { supabase } from '../lib/supabaseClient.js'
@@ -8,6 +9,8 @@ const STORAGE_BUCKET = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'document
 
 export default function ChatPage() {
   const { user } = useAuth()
+  const { id: projectId } = useParams()
+  const [project, setProject] = useState({ name: 'Project', emoji: '📁' })
   const [selectedSources, setSelectedSources] = useState([])
   const [sources, setSources] = useState([])
   const [loadingSources, setLoadingSources] = useState(false)
@@ -64,9 +67,32 @@ export default function ChatPage() {
     loadSources()
   }, [user])
 
+  useEffect(() => {
+    const loadProject = async () => {
+      if (!user || !projectId) return
+      const { data, error } = await supabase
+        .from('projects')
+        .select('name, emoji')
+        .eq('id', projectId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (error) {
+        return
+      }
+
+      setProject({
+        name: data?.name || 'Project',
+        emoji: data?.emoji || '📁',
+      })
+    }
+
+    loadProject()
+  }, [user, projectId])
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-white to-blue-100 text-slate-900">
-      <Navbar />
+      <Navbar title={project.name} emoji={project.emoji} />
       {showUploader ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-6 backdrop-blur-sm">
           <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white shadow-2xl">
