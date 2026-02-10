@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Navbar from '../components/Navbar.jsx'
+import ProjectsNavbar from '../components/ProjectsNavbar.jsx'
 import { supabase } from '../lib/supabaseClient.js'
 import useAuth from '../hooks/useAuth.js'
 
@@ -86,7 +86,7 @@ export default function DocumentsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-white to-blue-100 text-slate-900">
-      <Navbar />
+      <ProjectsNavbar />
       <main className="mx-auto w-full max-w-6xl px-6 pb-16 pt-8">
         <h1 className="text-3xl font-semibold text-slate-900">Recent projects</h1>
         <p className="mt-2 text-sm text-slate-500">Pick up where you left off or start a new workspace.</p>
