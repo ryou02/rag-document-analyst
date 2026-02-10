@@ -128,6 +128,7 @@ export default function DocumentsPage() {
             <button
               key={project.id}
               type="button"
+              onClick={() => navigate(`/projects/${project.id}`)}
               className={`flex min-h-[220px] flex-col justify-between rounded-3xl border border-slate-200 px-6 py-6 text-left shadow-sm transition hover:border-blue-200 hover:shadow-md ${
                 cardTints[index % cardTints.length]
               }`}
