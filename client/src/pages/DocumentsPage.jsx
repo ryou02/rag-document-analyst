@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 import { supabase } from '../lib/supabaseClient.js'
 import useAuth from '../hooks/useAuth.js'
 
 export default function DocumentsPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [creating, setCreating] = useState(false)
+  const [openMenuFor, setOpenMenuFor] = useState(null)
 
   const cardTints = useMemo(
     () => ['bg-purple-50', 'bg-blue-50', 'bg-slate-50', 'bg-emerald-50', 'bg-amber-50'],
@@ -39,6 +43,47 @@ export default function DocumentsPage() {
     loadProjects()
   }, [user])
 
+  const handleDeleteProject = async (projectId) => {
+    if (!user) return
+    const ok = window.confirm('Delete this project?')
+    if (!ok) return
+
+    const { error: deleteError } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', projectId)
+      .eq('user_id', user.id)
+
+    if (deleteError) {
+      setError(deleteError.message)
+      return
+    }
+
+    setOpenMenuFor(null)
+    setProjects((prev) => prev.filter((project) => project.id !== projectId))
+  }
+
+  const handleCreateProject = async () => {
+    if (!user) return
+    setCreating(true)
+    setError('')
+
+    const { data, error: createError } = await supabase
+      .from('projects')
+      .insert({ user_id: user.id, name: 'Untitled project', emoji: '📁' })
+      .select('id')
+      .single()
+
+    setCreating(false)
+
+    if (createError) {
+      setError(createError.message)
+      return
+    }
+
+    navigate(`/projects/${data.id}`)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-white to-blue-100 text-slate-900">
       <Navbar />
@@ -49,12 +94,16 @@ export default function DocumentsPage() {
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <button
             type="button"
+            onClick={handleCreateProject}
+            disabled={creating}
             className="flex min-h-[220px] flex-col items-center justify-center gap-4 rounded-3xl border border-slate-200 bg-white px-6 py-8 text-left shadow-sm transition hover:border-blue-200 hover:shadow-md"
           >
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-3xl text-blue-600">
               +
             </div>
-            <div className="text-lg font-semibold text-slate-800">Create new project</div>
+            <div className="text-lg font-semibold text-slate-800">
+              {creating ? 'Creating project...' : 'Create new project'}
+            </div>
           </button>
 
           {loading ? (
@@ -85,7 +134,33 @@ export default function DocumentsPage() {
             >
               <div className="flex items-center justify-between">
                 <div className="text-2xl">{project.emoji || '📁'}</div>
-                <span className="text-lg text-slate-400">⋮</span>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      setOpenMenuFor((prev) => (prev === project.id ? null : project.id))
+                    }}
+                    className="rounded-full px-2 py-1 text-lg text-slate-400 transition hover:bg-white/70"
+                    aria-label="Project menu"
+                  >
+                    ⋮
+                  </button>
+                  {openMenuFor === project.id ? (
+                    <div className="absolute right-0 top-9 z-10 w-32 rounded-xl border border-slate-200 bg-white p-2 text-xs shadow-lg">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          handleDeleteProject(project.id)
+                        }}
+                        className="w-full rounded-lg px-3 py-2 text-left text-red-500 hover:bg-red-50"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
               </div>
               <div>
                 <div className="text-2xl font-semibold text-slate-900">{project.name}</div>
