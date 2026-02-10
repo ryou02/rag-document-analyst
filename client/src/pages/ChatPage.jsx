@@ -17,6 +17,7 @@ export default function ChatPage() {
   const [sourcesError, setSourcesError] = useState('')
   const [showUploader, setShowUploader] = useState(false)
   const [openMenuFor, setOpenMenuFor] = useState(null)
+  const [updatingTitle, setUpdatingTitle] = useState(false)
 
   const toggleSource = (index) => {
     setSelectedSources((prev) =>
@@ -90,9 +91,28 @@ export default function ChatPage() {
     loadProject()
   }, [user, projectId])
 
+  const handleTitleSave = async (nextTitle) => {
+    if (!user || !projectId) return
+    setUpdatingTitle(true)
+    const { error } = await supabase
+      .from('projects')
+      .update({ name: nextTitle })
+      .eq('id', projectId)
+      .eq('user_id', user.id)
+    setUpdatingTitle(false)
+    if (!error) {
+      setProject((prev) => ({ ...prev, name: nextTitle }))
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-white to-blue-100 text-slate-900">
-      <Navbar title={project.name} emoji={project.emoji} />
+      <Navbar
+        title={updatingTitle ? `${project.name}…` : project.name}
+        emoji={project.emoji}
+        editable
+        onTitleSave={handleTitleSave}
+      />
       {showUploader ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-6 backdrop-blur-sm">
           <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white shadow-2xl">

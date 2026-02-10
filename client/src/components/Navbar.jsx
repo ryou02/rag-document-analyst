@@ -1,8 +1,22 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
 
-export default function Navbar({ title = 'Project', emoji = '📁' }) {
+export default function Navbar({ title = 'Project', emoji = '📁', editable = false, onTitleSave }) {
   const navigate = useNavigate()
+  const [isEditing, setIsEditing] = useState(false)
+  const [draftTitle, setDraftTitle] = useState(title)
+
+  useEffect(() => {
+    setDraftTitle(title)
+  }, [title])
+
+  const commitTitle = async () => {
+    const nextTitle = draftTitle.trim()
+    setIsEditing(false)
+    if (!nextTitle || nextTitle === title) return
+    await onTitleSave?.(nextTitle)
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -16,7 +30,38 @@ export default function Navbar({ title = 'Project', emoji = '📁' }) {
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-lg shadow-sm">
             {emoji}
           </div>
-          <div className="text-lg font-semibold text-slate-900">{title}</div>
+          {editable ? (
+            <div>
+              {isEditing ? (
+                <input
+                  value={draftTitle}
+                  onChange={(event) => setDraftTitle(event.target.value)}
+                  onBlur={commitTitle}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      commitTitle()
+                    }
+                    if (event.key === 'Escape') {
+                      setDraftTitle(title)
+                      setIsEditing(false)
+                    }
+                  }}
+                  className="w-64 rounded-lg border border-slate-200 bg-white px-3 py-1 text-lg font-semibold text-slate-900 shadow-sm focus:border-blue-300 focus:outline-none"
+                  autoFocus
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="text-left text-lg font-semibold text-slate-900 transition hover:text-blue-700"
+                >
+                  {title}
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="text-lg font-semibold text-slate-900">{title}</div>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <button
