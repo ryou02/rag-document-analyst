@@ -4,6 +4,7 @@ import useAuth from '../hooks/useAuth.js'
 import fileUploadImg from '../assets/fileupload.png'
 
 const DEFAULT_BUCKET = 'documents'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export default function FileUpload({ onClose, onUploaded, projectId }) {
   const { user } = useAuth()  
@@ -52,6 +53,24 @@ export default function FileUpload({ onClose, onUploaded, projectId }) {
 
     if (insertError) {
       setError(insertError.message)
+      return
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/ingest`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project_id: projectId }),
+      })
+      if (!response.ok) {
+        throw new Error(`Ingest failed with status ${response.status}`)
+      }
+    } catch (ingestError) {
+      setError(
+        ingestError instanceof Error
+          ? ingestError.message
+          : 'Ingest failed. Check backend logs.',
+      )
       return
     }
 
