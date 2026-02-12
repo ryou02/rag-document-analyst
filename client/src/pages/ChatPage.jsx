@@ -5,7 +5,7 @@ import FileUpload from '../components/FileUpload.jsx'
 import { supabase } from '../lib/supabaseClient.js'
 import useAuth from '../hooks/useAuth.js'
 
-const STORAGE_BUCKET = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'documents'
+const STORAGE_BUCKET =  'documents'
 
 export default function ChatPage() {
   const { user } = useAuth()
