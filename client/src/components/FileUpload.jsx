@@ -27,6 +27,7 @@ export default function FileUpload({ onClose, onUploaded, projectId }) {
       return
     }
 
+    onClose?.()
     setUploading(true)
     const filePath = `${user.id}/${Date.now()}-${selectedFile.name}`
 
