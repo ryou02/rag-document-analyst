@@ -48,6 +48,17 @@ export default function DocumentsPage() {
     const ok = window.confirm('Delete this project?')
     if (!ok) return
 
+    const { error: docsDeleteError } = await supabase
+      .from('documents')
+      .delete()
+      .eq('project_id', projectId)
+      .eq('user_id', user.id)
+
+    if (docsDeleteError) {
+      setError(docsDeleteError.message)
+      return
+    }
+
     const { error: deleteError } = await supabase
       .from('projects')
       .delete()
