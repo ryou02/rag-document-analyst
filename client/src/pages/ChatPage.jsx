@@ -11,7 +11,6 @@ export default function ChatPage() {
   const { user } = useAuth()
   const { id: projectId } = useParams()
   const [project, setProject] = useState({ name: 'Project', emoji: '📁' })
-  const [selectedSources, setSelectedSources] = useState([])
   const [sources, setSources] = useState([])
   const [loadingSources, setLoadingSources] = useState(false)
   const [sourcesError, setSourcesError] = useState('')
@@ -19,11 +18,6 @@ export default function ChatPage() {
   const [openMenuFor, setOpenMenuFor] = useState(null)
   const [updatingTitle, setUpdatingTitle] = useState(false)
 
-  const toggleSource = (index) => {
-    setSelectedSources((prev) =>
-      prev.includes(index) ? prev.filter((item) => item !== index) : [...prev, index],
-    )
-  }
 
   const handleDeleteSource = async (doc) => {
     if (!user) return
@@ -72,7 +66,6 @@ export default function ChatPage() {
     }
 
     setSources(data || [])
-    setSelectedSources((data || []).map((_, index) => index))
   }
 
   useEffect(() => {
@@ -185,13 +178,6 @@ export default function ChatPage() {
                     <span className="hidden group-hover:block">⋮</span>
                   </button>
                   <div className="truncate text-slate-700">{doc.title}</div>
-                  <input
-                    type="checkbox"
-                    checked={selectedSources.includes(index)}
-                    onChange={() => toggleSource(index)}
-                    className="ml-auto h-4 w-4 accent-blue-600"
-                    aria-label="Toggle source"
-                  />
                   {openMenuFor === doc.id ? (
                     <div className="absolute left-10 top-8 z-10 w-36 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
                       <button
