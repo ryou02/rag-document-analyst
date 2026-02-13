@@ -5,7 +5,8 @@ import FileUpload from '../components/FileUpload.jsx'
 import { supabase } from '../lib/supabaseClient.js'
 import useAuth from '../hooks/useAuth.js'
 
-const STORAGE_BUCKET =  'documents'
+const STORAGE_BUCKET = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'documents'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export default function ChatPage() {
   const { user } = useAuth()
@@ -17,6 +18,10 @@ export default function ChatPage() {
   const [showUploader, setShowUploader] = useState(false)
   const [openMenuFor, setOpenMenuFor] = useState(null)
   const [updatingTitle, setUpdatingTitle] = useState(false)
+  const [messages, setMessages] = useState([])
+  const [question, setQuestion] = useState('')
+  const [sending, setSending] = useState(false)
+  const [chatError, setChatError] = useState('')
 
 
   const handleDeleteSource = async (doc) => {
@@ -106,6 +111,37 @@ export default function ChatPage() {
     setUpdatingTitle(false)
     if (!error) {
       setProject((prev) => ({ ...prev, name: nextTitle }))
+    }
+  }
+
+  const handleSend = async () => {
+    const trimmed = question.trim()
+    if (!trimmed || !projectId) return
+
+    setChatError('')
+    setSending(true)
+    setMessages((prev) => [...prev, { role: 'user', content: trimmed }])
+    setQuestion('')
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project_id: projectId, question: trimmed }),
+      })
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `Query failed with ${response.status}`)
+      }
+      const data = await response.json()
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: data.answer, sources: data.sources || [] },
+      ])
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : 'Query failed.')
+    } finally {
+      setSending(false)
     }
   }
 
@@ -205,49 +241,85 @@ export default function ChatPage() {
             </div>
 
             <div className="mt-4 flex-1 space-y-5 text-sm text-slate-600">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">
-                  AI
+              {messages.length === 0 ? (
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-500">
+                  Ask a question about your documents to get started.
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700">
-                  Cultural norms and ideology are part of the shared belief system that makes a social
-                  order feel normal. They reinforce who holds power by shaping what people see as natural
-                  or expected.
+              ) : null}
+              {messages.map((message, index) => (
+                <div
+                  key={`${message.role}-${index}`}
+                  className={`flex items-start gap-3 ${
+                    message.role === 'user' ? 'justify-end' : ''
+                  }`}
+                >
+                  {message.role === 'assistant' ? (
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">
+                      AI
+                    </div>
+                  ) : null}
+                  <div
+                    className={`rounded-2xl border px-4 py-3 ${
+                      message.role === 'user'
+                        ? 'border-blue-200 bg-blue-50 text-slate-700'
+                        : 'border-slate-200 bg-white text-slate-700'
+                    }`}
+                  >
+                    <div>{message.content}</div>
+                    {message.role === 'assistant' && message.sources?.length ? (
+                      <div className="mt-3 space-y-1 text-[11px] text-slate-400">
+                        <div className="font-semibold text-slate-500">Sources</div>
+                        {message.sources.slice(0, 3).map((source, sourceIndex) => (
+                          <div key={`${source.document_id}-${sourceIndex}`} className="truncate">
+                            {source.title || 'Untitled'}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                  {message.role === 'user' ? (
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600">
+                      J
+                    </div>
+                  ) : null}
                 </div>
-              </div>
-
-              <div className="flex items-start justify-end gap-3">
-                <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-slate-700">
-                  Can you summarize how cultural norms and ideology relate to social structure?
+              ))}
+              {sending ? (
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">
+                    AI
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-500">
+                    Thinking...
+                  </div>
                 </div>
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600">
-                  J
+              ) : null}
+              {chatError ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-500">
+                  {chatError}
                 </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">
-                  AI
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700">
-                  Stratification organizes society into layers, and those layers determine access to
-                  resources. That access shapes life chances like education, health, and income.
-                </div>
-              </div>
-
-              <div className="flex items-start justify-end gap-3">
-                <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-slate-700">
-                  And how does stratification connect to life chances?
-                </div>
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600">
-                  J
-                </div>
-              </div>
+              ) : null}
             </div>
 
             <div className="mt-6 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
-              <span className="flex-1">Start typing...</span>
-              <button className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white shadow-md shadow-blue-200">
+              <input
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault()
+                    handleSend()
+                  }
+                }}
+                placeholder="Ask a question..."
+                className="flex-1 bg-transparent text-sm text-slate-700 outline-none"
+              />
+              <button
+                type="button"
+                onClick={handleSend}
+                disabled={sending}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white shadow-md shadow-blue-200 disabled:cursor-not-allowed disabled:opacity-60"
+              >
                 ↑
               </button>
             </div>

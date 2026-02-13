@@ -51,6 +51,22 @@ def query_project(project_id: str, question: str, k: int = 4):
   }
 
 
+def format_context(matches):
+  if not matches:
+    return ""
+
+  lines = []
+  for idx, match in enumerate(matches, start=1):
+    metadata = match.get('metadata', {})
+    title = metadata.get('title') or 'Untitled'
+    document_id = metadata.get('document_id') or 'unknown'
+    content = match.get('content', '')
+    lines.append(
+      f"[{idx}] {title} (doc_id: {document_id})\\n{content}"
+    )
+  return "\\n\\n".join(lines)
+
+
 if __name__ == '__main__':
   import sys
 

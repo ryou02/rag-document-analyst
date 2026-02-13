@@ -1,10 +1,13 @@
+import json
 import os
+import urllib.request
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from rag.ingestion import ingest_project
+from rag.query import format_context, query_project
 
 app = FastAPI()
 
@@ -27,19 +30,86 @@ class QueryRequest(BaseModel):
 class IngestRequest(BaseModel):
     project_id: str
 
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_BASE_URL = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
 @app.post("/query")
 def query(req: QueryRequest):
-    # temporary stub so frontend integration works first
+    if not GROQ_API_KEY:
+        raise HTTPException(status_code=500, detail="Missing GROQ_API_KEY")
+
+    retrieval = query_project(req.project_id, req.question, k=4)
+    if retrieval.get("status") != "ok":
+        raise HTTPException(status_code=400, detail=retrieval.get("message", "Query failed"))
+
+    matches = retrieval.get("matches", [])
+    context = format_context(matches)
+
+    system_prompt = (
+        "You are a helpful RAG assistant. Use the provided context to answer the question. "
+        "If the answer isn't in the context, say you don't know. Keep answers concise and factual."
+    )
+
+    user_prompt = (
+        f"Context:\\n{context}\\n\\n"
+        f"Question: {req.question}\\n"
+        "Answer:"
+    )
+
+    payload = {
+        "model": GROQ_MODEL,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        "temperature": 0.2,
+    }
+
+    request = urllib.request.Request(
+        f"{GROQ_BASE_URL}/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+        },
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            body = json.loads(response.read().decode("utf-8"))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"GROQ request failed: {exc}") from exc
+
+    answer = (
+        body.get("choices", [{}])[0]
+        .get("message", {})
+        .get("content", "")
+        .strip()
+    )
+
+    sources = [
+        {
+            "title": match.get("metadata", {}).get("title"),
+            "document_id": match.get("metadata", {}).get("document_id"),
+            "storage_path": match.get("metadata", {}).get("storage_path"),
+            "content": match.get("content"),
+        }
+        for match in matches
+    ]
+
     return {
         "status": "ok",
         "project_id": req.project_id,
         "question": req.question,
-        "answer": f"Stub answer for: {req.question}",
-        "sources": []
+        "answer": answer,
+        "sources": sources,
     }
 
 
