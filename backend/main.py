@@ -15,11 +15,6 @@ load_dotenv()
 
 app = FastAPI()
 
-if os.getenv("GROQ_API_KEY"):
-    print("GROQ_API_KEY loaded.")
-else:
-    print("GROQ_API_KEY missing.")
-
 cors_origins = os.getenv("CORS_ORIGINS", "*")
 origins = [origin.strip() for origin in cors_origins.split(",")] if cors_origins else ["*"]
 
