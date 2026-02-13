@@ -1,15 +1,24 @@
 import json
 import os
+import urllib.error
 import urllib.request
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 from pydantic import BaseModel
 
 from rag.ingestion import ingest_project
 from rag.query import format_context, query_project
 
+load_dotenv()
+
 app = FastAPI()
+
+if os.getenv("GROQ_API_KEY"):
+    print("GROQ_API_KEY loaded.")
+else:
+    print("GROQ_API_KEY missing.")
 
 cors_origins = os.getenv("CORS_ORIGINS", "*")
 origins = [origin.strip() for origin in cors_origins.split(",")] if cors_origins else ["*"]
@@ -84,6 +93,10 @@ def query(req: QueryRequest):
     try:
         with urllib.request.urlopen(request, timeout=60) as response:
             body = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        error_body = exc.read().decode("utf-8") if exc.fp else ""
+        detail = f"GROQ request failed: HTTP {exc.code}. {error_body}"
+        raise HTTPException(status_code=502, detail=detail) from exc
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"GROQ request failed: {exc}") from exc
 
