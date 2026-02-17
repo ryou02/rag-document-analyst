@@ -3,8 +3,8 @@ import { supabase } from '../lib/supabaseClient.js'
 import useAuth from '../hooks/useAuth.js'
 import fileUploadImg from '../assets/fileupload.png'
 
-const DEFAULT_BUCKET = 'documents'
-const API_BASE_URL = 'http://localhost:8000'
+const DEFAULT_BUCKET = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'documents'
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
 
 export default function FileUpload({ onClose, onUploaded, projectId }) {
   const { user } = useAuth()  

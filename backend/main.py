@@ -81,6 +81,7 @@ def query(req: QueryRequest):
         headers={
             "Content-Type": "application/json",
             "Authorization": f"Bearer {GROQ_API_KEY}",
+            "User-Agent": "rag-document-analyst/1.0",
         },
         method="POST",
     )

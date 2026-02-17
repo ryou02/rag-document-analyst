@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabaseClient.js'
 import useAuth from '../hooks/useAuth.js'
 
 const STORAGE_BUCKET = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'documents'
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
 
 export default function ChatPage() {
   const { user } = useAuth()
