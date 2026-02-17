@@ -1,6 +1,11 @@
   # RAG Document Analyst
 
-  End-to-end project for uploading PDFs, indexing them with FAISS, and chatting with a Groq-powered RAG assistant.  
+   An analyst that lets you upload PDFs and chat with a Groq-powered RAG assistant.
+
+  Frontend: React + Supabase auth/storage.  
+  Backend: FastAPI + LangChain + FAISS.
+
+  ![RAG Document Analyst Preview](./preview/prev1.png)
 
   ## Architecture
   - **Client** (`client/`)
