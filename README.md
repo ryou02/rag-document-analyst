@@ -2,7 +2,7 @@
 
    An analyst that lets you upload PDFs and chat with a Groq-powered RAG assistant.
 
-  Frontend: React + Supabase auth/storage.  
+  Frontend: React + Tailwind CSS + Supabase auth/storage.  
   Backend: FastAPI + LangChain + FAISS.
 
   ![RAG Document Analyst Preview](./preview/prev1.png)
