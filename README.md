@@ -38,6 +38,13 @@
     - `storage_path` (text)
     - `project_id` (uuid, FK → projects.id)
     - `created_at` (timestamp)
+  - `messages`
+    - `id` (uuid)
+    - `project_id` (uuid, FK → projects.id)
+    - `user_id` (uuid, FK → auth.users.id)
+    - `role` (text)
+    - `content` (text)
+    - `created_at` (timestamptz)
 
   Storage bucket:
   - `documents` (default; configurable)
