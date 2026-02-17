@@ -16,6 +16,7 @@ export default function ChatPage() {
   const [loadingSources, setLoadingSources] = useState(false)
   const [sourcesError, setSourcesError] = useState('')
   const [showUploader, setShowUploader] = useState(false)
+  const [isUploadingSource, setIsUploadingSource] = useState(false)
   const [openMenuFor, setOpenMenuFor] = useState(null)
   const [updatingTitle, setUpdatingTitle] = useState(false)
   const [messages, setMessages] = useState([])
@@ -73,8 +74,32 @@ export default function ChatPage() {
     setSources(data || [])
   }
 
+  const loadMessages = async () => {
+    if (!user || !projectId) return
+    setChatError('')
+
+    const { data, error } = await supabase
+      .from('messages')
+      .select('id, role, content, created_at')
+      .eq('user_id', user.id)
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      setChatError(error.message)
+      return
+    }
+
+    setMessages((data || []).map((item) => ({
+      id: item.id,
+      role: item.role,
+      content: item.content,
+    })))
+  }
+
   useEffect(() => {
     loadSources()
+    loadMessages()
   }, [user, projectId])
 
   useEffect(() => {
@@ -116,7 +141,7 @@ export default function ChatPage() {
 
   const handleSend = async () => {
     const trimmed = question.trim()
-    if (!trimmed || !projectId) return
+    if (!trimmed || !projectId || !user) return
 
     setChatError('')
     setSending(true)
@@ -136,8 +161,26 @@ export default function ChatPage() {
       const data = await response.json()
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: data.answer, sources: data.sources || [] },
+        { role: 'assistant', content: data.answer },
       ])
+
+      const { error: saveError } = await supabase.from('messages').insert([
+        {
+          project_id: projectId,
+          user_id: user.id,
+          role: 'user',
+          content: trimmed,
+        },
+        {
+          project_id: projectId,
+          user_id: user.id,
+          role: 'assistant',
+          content: data.answer || '',
+        },
+      ])
+      if (saveError) {
+        setChatError(saveError.message)
+      }
     } catch (err) {
       setChatError(err instanceof Error ? err.message : 'Query failed.')
     } finally {
@@ -161,6 +204,7 @@ export default function ChatPage() {
               onUploaded={() => {
                 loadSources()
               }}
+              onUploadStateChange={setIsUploadingSource}
               projectId={projectId}
             />
           </div>
@@ -184,6 +228,11 @@ export default function ChatPage() {
               {loadingSources ? (
                 <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-4 text-xs text-slate-500">
                   Loading sources...
+                </div>
+              ) : null}
+              {isUploadingSource ? (
+                <div className="animate-pulse rounded-2xl border border-blue-100 bg-blue-50 px-3 py-3 text-xs text-blue-600">
+                  Uploading and indexing source...
                 </div>
               ) : null}
               {sourcesError ? (
@@ -266,16 +315,6 @@ export default function ChatPage() {
                     }`}
                   >
                     <div>{message.content}</div>
-                    {message.role === 'assistant' && message.sources?.length ? (
-                      <div className="mt-3 space-y-1 text-[11px] text-slate-400">
-                        <div className="font-semibold text-slate-500">Sources</div>
-                        {message.sources.slice(0, 3).map((source, sourceIndex) => (
-                          <div key={`${source.document_id}-${sourceIndex}`} className="truncate">
-                            {source.title || 'Untitled'}
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
                   </div>
                   {message.role === 'user' ? (
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600">

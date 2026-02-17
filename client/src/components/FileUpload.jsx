@@ -6,7 +6,7 @@ import fileUploadImg from '../assets/fileupload.png'
 const DEFAULT_BUCKET = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'documents'
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
 
-export default function FileUpload({ onClose, onUploaded, projectId }) {
+export default function FileUpload({ onClose, onUploaded, onUploadStateChange, projectId }) {
   const { user } = useAuth()  
   const [file, setFile] = useState(null)
   const [uploading, setUploading] = useState(false)
@@ -27,6 +27,7 @@ export default function FileUpload({ onClose, onUploaded, projectId }) {
       return
     }
 
+    onUploadStateChange?.(true)
     onClose?.()
     setUploading(true)
     const filePath = `${user.id}/${Date.now()}-${selectedFile.name}`
@@ -42,6 +43,7 @@ export default function FileUpload({ onClose, onUploaded, projectId }) {
 
     if (uploadError) {
       setError(uploadError.message)
+      onUploadStateChange?.(false)
       return
     }
 
@@ -54,6 +56,7 @@ export default function FileUpload({ onClose, onUploaded, projectId }) {
 
     if (insertError) {
       setError(insertError.message)
+      onUploadStateChange?.(false)
       return
     }
 
@@ -72,12 +75,14 @@ export default function FileUpload({ onClose, onUploaded, projectId }) {
           ? ingestError.message
           : 'Ingest failed. Check backend logs.',
       )
+      onUploadStateChange?.(false)
       return
     }
 
     setSuccess('Upload complete.')
     setFile(null)
     onUploaded?.()
+    onUploadStateChange?.(false)
     onClose?.()
   }
 
