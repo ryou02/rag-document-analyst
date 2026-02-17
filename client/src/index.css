@@ -20,6 +20,10 @@
   }
 }
 
+.projects-enter {
+  animation: fadeIn 0.45s ease-out both;
+}
+
 .fade-in {
   animation: fadeIn 0.6s ease-out both;
 }
@@ -31,4 +35,20 @@
 .rise-in-delay {
   animation: fadeInUp 0.7s ease-out both;
   animation-delay: 120ms;
+}
+
+.card-reveal {
+  animation: fadeInUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.card-hover-lift {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+.create-pop {
+  animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

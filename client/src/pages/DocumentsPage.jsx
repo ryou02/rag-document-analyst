@@ -96,18 +96,18 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-white to-blue-100 text-slate-900">
+    <div className="projects-enter min-h-screen bg-gradient-to-b from-white via-white to-blue-100 text-slate-900">
       <ProjectsNavbar />
       <main className="mx-auto w-full max-w-6xl px-6 pb-16 pt-8">
-        <h1 className="text-3xl font-semibold text-slate-900">Recent projects</h1>
-        <p className="mt-2 text-sm text-slate-500">Pick up where you left off or start a new workspace.</p>
+        <h1 className="rise-in text-3xl font-semibold text-slate-900">Recent projects</h1>
+        <p className="rise-in-delay mt-2 text-sm text-slate-500">Pick up where you left off or start a new workspace.</p>
 
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <button
             type="button"
             onClick={handleCreateProject}
             disabled={creating}
-            className="flex min-h-[220px] flex-col items-center justify-center gap-4 rounded-3xl border border-slate-200 bg-white px-6 py-8 text-left shadow-sm transition hover:border-blue-200 hover:shadow-md"
+            className="create-pop card-hover-lift flex min-h-[220px] flex-col items-center justify-center gap-4 rounded-3xl border border-slate-200 bg-white px-6 py-8 text-left shadow-sm hover:border-blue-200 hover:shadow-md"
           >
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-3xl text-blue-600">
               +
@@ -140,9 +140,10 @@ export default function DocumentsPage() {
               key={project.id}
               type="button"
               onClick={() => navigate(`/projects/${project.id}`)}
-              className={`flex min-h-[220px] flex-col justify-between rounded-3xl border border-slate-200 px-6 py-6 text-left shadow-sm transition hover:border-blue-200 hover:shadow-md ${
+              className={`card-reveal card-hover-lift flex min-h-[220px] flex-col justify-between rounded-3xl border border-slate-200 px-6 py-6 text-left shadow-sm hover:border-blue-200 hover:shadow-md ${
                 cardTints[index % cardTints.length]
               }`}
+              style={{ animationDelay: `${Math.min(index, 10) * 70}ms` }}
             >
               <div className="flex items-center justify-between">
                 <div className="text-2xl">{project.emoji || '📁'}</div>
