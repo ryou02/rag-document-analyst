@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
+import useAuth from '../hooks/useAuth.js'
+import UserAvatar from './UserAvatar.jsx'
 
 export default function Navbar({ title = 'Project', emoji = '📁', editable = false, onTitleSave }) {
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
   const [draftTitle, setDraftTitle] = useState(title)
+  const userEmail = user?.email || user?.user_metadata?.email || 'User'
 
   useEffect(() => {
     setDraftTitle(title)
@@ -71,9 +75,11 @@ export default function Navbar({ title = 'Project', emoji = '📁', editable = f
           >
             Log out
           </button>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 text-xs font-semibold text-white">
-            J
-          </div>
+          <UserAvatar
+            user={user}
+            title={userEmail}
+            className="h-9 w-9"
+          />
         </div>
       </header>
     </div>

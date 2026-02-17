@@ -4,6 +4,9 @@ End-to-end project for uploading PDFs, indexing them with FAISS, and chatting wi
 Frontend: React + Vite + Supabase auth/storage.  
 Backend: FastAPI + LangChain + FAISS.
 
+## Preview
+![RAG Document Analyst Preview](preview/prev1.png)
+
 ## What This Includes
 - Email + Google OAuth via Supabase
 - Projects + documents stored in Supabase

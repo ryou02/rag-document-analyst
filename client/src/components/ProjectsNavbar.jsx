@@ -1,8 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
+import useAuth from '../hooks/useAuth.js'
+import UserAvatar from './UserAvatar.jsx'
 
 export default function ProjectsNavbar() {
+  const { user } = useAuth()
   const navigate = useNavigate()
+  const userEmail = user?.email || user?.user_metadata?.email || 'User'
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -21,9 +25,11 @@ export default function ProjectsNavbar() {
           >
             Log out
           </button>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 text-xs font-semibold text-white">
-            J
-          </div>
+          <UserAvatar
+            user={user}
+            title={userEmail}
+            className="h-9 w-9"
+          />
         </div>
       </header>
     </div>

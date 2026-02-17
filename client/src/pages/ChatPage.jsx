@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 import FileUpload from '../components/FileUpload.jsx'
+import UserAvatar from '../components/UserAvatar.jsx'
 import { supabase } from '../lib/supabaseClient.js'
 import useAuth from '../hooks/useAuth.js'
 
@@ -10,6 +11,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').r
 
 export default function ChatPage() {
   const { user } = useAuth()
+  const userEmail = user?.email || user?.user_metadata?.email || 'User'
   const { id: projectId } = useParams()
   const [project, setProject] = useState({ name: 'Project', emoji: '📁' })
   const [sources, setSources] = useState([])
@@ -317,9 +319,11 @@ export default function ChatPage() {
                     <div>{message.content}</div>
                   </div>
                   {message.role === 'user' ? (
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600">
-                      J
-                    </div>
+                    <UserAvatar
+                      user={user}
+                      title={userEmail}
+                      className="h-9 w-9 shrink-0 border-blue-200 bg-blue-100 text-blue-600"
+                    />
                   ) : null}
                 </div>
               ))}
