@@ -24,7 +24,7 @@
     `backend/rag/indexes/<project_id>/`
 
   ## Supabase Schema
-  Tables used (fields inferred from the code):
+  Tables used:
   - `projects`
     - `id` (uuid)
     - `user_id` (uuid)
